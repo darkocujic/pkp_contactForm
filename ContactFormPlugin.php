@@ -115,12 +115,18 @@ class ContactFormPlugin extends GenericPlugin
             error_log('contactForm: REGISTRY_NAME is stale, the plugin registers as ' . $this->getName());
         }
 
+        // Registered even when the plugin is disabled. Acron rebuilds its
+        // crontab when a plugin's "enabled" setting changes, and looks for
+        // this callback on the plugin that changed — which at that moment has
+        // already been registered as disabled. The task itself skips journals
+        // where the plugin is off.
+        Hook::add('AcronPlugin::parseCronTab', [$this, 'addScheduledTask']);
+
         if ($this->getEnabled($mainContextId)) {
             Hook::add('LoadHandler', [$this, 'setPageHandler']);
             Hook::add('NavigationMenus::itemTypes', [$this, 'addNavigationMenuItemType']);
             Hook::add('NavigationMenus::displaySettings', [$this, 'setNavigationMenuItemDisplayDetails']);
             Hook::add('Mailer::Mailables', [$this, 'addMailables']);
-            Hook::add('AcronPlugin::parseCronTab', [$this, 'addScheduledTask']);
         }
 
         return true;
@@ -409,7 +415,6 @@ class ContactFormPlugin extends GenericPlugin
      * Read a setting, falling back to its documented default when it has never
      * been saved. Only null triggers the fallback, so a deliberately saved
      * false or 0 is respected.
-     *
      */
     public function getSettingOrDefault(int $contextId, string $name)
     {

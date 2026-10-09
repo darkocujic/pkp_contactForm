@@ -113,7 +113,6 @@ class ContactFormSettingsForm extends Form
 
     /**
      * Every entry in a separated list of addresses must be a valid address.
-     *
      */
     public static function areAllEmailsValid($value): bool
     {

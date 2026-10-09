@@ -212,7 +212,6 @@ class ContactForm extends Form
 
     /**
      * @copydoc Form::validate()
-     *
      */
     public function validate($callHooks = true)
     {
