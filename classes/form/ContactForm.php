@@ -175,6 +175,8 @@ class ContactForm extends Form
 
     /**
      * @copydoc Form::fetch()
+     *
+     * @param null|mixed $template
      */
     public function fetch($request, $template = null, $display = false)
     {
@@ -211,7 +213,6 @@ class ContactForm extends Form
     /**
      * @copydoc Form::validate()
      *
-     * @param mixed $callHooks
      */
     public function validate($callHooks = true)
     {

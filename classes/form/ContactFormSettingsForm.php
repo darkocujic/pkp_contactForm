@@ -114,7 +114,6 @@ class ContactFormSettingsForm extends Form
     /**
      * Every entry in a separated list of addresses must be a valid address.
      *
-     * @param mixed $value
      */
     public static function areAllEmailsValid($value): bool
     {
@@ -133,7 +132,6 @@ class ContactFormSettingsForm extends Form
     }
 
     /**
-     * @param mixed $value
      */
     public static function isNonNegativeInteger($value): bool
     {
@@ -189,6 +187,8 @@ class ContactFormSettingsForm extends Form
 
     /**
      * @copydoc Form::fetch()
+     *
+     * @param null|mixed $template
      */
     public function fetch($request, $template = null, $display = false)
     {

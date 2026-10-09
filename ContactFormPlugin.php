@@ -410,7 +410,6 @@ class ContactFormPlugin extends GenericPlugin
      * been saved. Only null triggers the fallback, so a deliberately saved
      * false or 0 is respected.
      *
-     * @return mixed
      */
     public function getSettingOrDefault(int $contextId, string $name)
     {
