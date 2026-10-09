@@ -8,8 +8,9 @@ The repo root **is** the plugin directory. It installs to `plugins/generic/conta
 - OJS **3.4.x** (`stable-3_4_0`). PKP's sources for 3.4 are on the `stable-3_4_0` branch, **not**
   `main`; `ojs/docs/dev/guide/hooks.rst` in this repo is generated from 3.6-dev, so confirm any hook
   signature against `stable-3_4_0` before relying on it.
-- PHP **8.2** for development. Avoid syntax newer than 8.1 so the plugin still loads on the 8.0/8.1
-  installs OJS 3.4 supports. No Composer dependencies — nothing to build before upload.
+- PHP **8.2** for development, but write **PHP 8.0-compatible syntax** so the plugin still loads on
+  the oldest PHP that OJS 3.4 supports (promotion, match, nullsafe are fine; `readonly` and enums
+  are not). No Composer dependencies — nothing to build before upload.
 - `declare(strict_types=1)` in framework-free classes only (guards, repository, value objects).
   Omit it in subclasses of PKP `Plugin`/`Handler`/`Form`, whose parent signatures are untyped.
 
