@@ -1,0 +1,123 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: contactForm\n"
+"POT-Creation-Date: 2026-10-09T00:00:00+00:00\n"
+"PO-Revision-Date: 2026-10-09T00:00:00+00:00\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "plugins.generic.contactForm.displayName"
+msgstr "Contact Form"
+
+msgid "plugins.generic.contactForm.description"
+msgstr ""
+"Adds a public \"Contact us\" page with a spam-resistant message form. "
+"Messages are emailed to the journal and archived so none are lost if "
+"delivery fails."
+
+msgid "plugins.generic.contactForm.navigationMenuItem"
+msgstr "Contact form"
+
+msgid "plugins.generic.contactForm.navigationMenuItem.description"
+msgstr "A link to this journal's contact form page."
+
+msgid "plugins.generic.contactForm.messages"
+msgstr "Messages"
+
+msgid "plugins.generic.contactForm.page.title"
+msgstr "Contact us"
+
+msgid "plugins.generic.contactForm.submit"
+msgstr "Send message"
+
+msgid "plugins.generic.contactForm.sent"
+msgstr "Thank you. Your message has been sent."
+
+msgid "plugins.generic.contactForm.field.name"
+msgstr "Your name"
+
+msgid "plugins.generic.contactForm.field.email"
+msgstr "Your email address"
+
+msgid "plugins.generic.contactForm.field.email.description"
+msgstr "We will only use this to reply to you."
+
+msgid "plugins.generic.contactForm.field.subject"
+msgstr "Subject"
+
+msgid "plugins.generic.contactForm.field.message"
+msgstr "Message"
+
+msgid "plugins.generic.contactForm.captcha.label"
+msgstr "Confirm that you are not a robot"
+
+msgid "plugins.generic.contactForm.decoy.label"
+msgstr "Leave this field empty"
+
+msgid "plugins.generic.contactForm.error.nameRequired"
+msgstr "Please enter your name."
+
+msgid "plugins.generic.contactForm.error.nameTooLong"
+msgstr "Your name is too long. Please shorten it."
+
+msgid "plugins.generic.contactForm.error.emailInvalid"
+msgstr "Please enter a valid email address so that we can reply."
+
+msgid "plugins.generic.contactForm.error.subjectRequired"
+msgstr "Please enter a subject."
+
+msgid "plugins.generic.contactForm.error.subjectTooLong"
+msgstr "The subject is too long. Please shorten it."
+
+msgid "plugins.generic.contactForm.error.bodyRequired"
+msgstr "Please enter your message."
+
+msgid "plugins.generic.contactForm.error.bodyTooLong"
+msgstr "Your message is too long. Please shorten it or send it by email instead."
+
+msgid "plugins.generic.contactForm.error.captcha"
+msgstr "Please complete the anti-spam challenge."
+
+msgid "plugins.generic.contactForm.error.rejected"
+msgstr ""
+"Your message could not be submitted. If you are a person rather than a "
+"robot, please wait a moment, reload this page and try again, or email the "
+"journal directly."
+
+msgid "plugins.generic.contactForm.error.notSent"
+msgstr ""
+"Your message could not be sent because of a problem on our side. Please try "
+"again later, or email the journal directly."
+
+msgid "plugins.generic.contactForm.emails.notification.name"
+msgstr "Contact form message"
+
+msgid "plugins.generic.contactForm.emails.notification.description"
+msgstr "Sent to the journal when a visitor submits the contact form."
+
+msgid "plugins.generic.contactForm.emails.acknowledgement.name"
+msgstr "Contact form acknowledgement"
+
+msgid "plugins.generic.contactForm.emails.acknowledgement.description"
+msgstr ""
+"Sent to the visitor to confirm that their message arrived, if the journal "
+"has enabled acknowledgements."
+
+msgid "plugins.generic.contactForm.emails.variable.senderName"
+msgstr "The name the visitor entered"
+
+msgid "plugins.generic.contactForm.emails.variable.senderEmail"
+msgstr "The email address the visitor entered"
+
+msgid "plugins.generic.contactForm.emails.variable.messageSubject"
+msgstr "The subject the visitor entered"
+
+msgid "plugins.generic.contactForm.emails.variable.messageBody"
+msgstr "The message the visitor entered"
+
+msgid "plugins.generic.contactForm.emails.variable.submittedAt"
+msgstr "The date and time the message was received"

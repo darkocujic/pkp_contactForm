@@ -22,6 +22,7 @@ use APP\plugins\generic\contactForm\classes\SubmissionRepository;
 use APP\template\TemplateManager;
 use Exception;
 use PKP\core\JSONMessage;
+use PKP\facades\Locale;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\plugins\GenericPlugin;
@@ -393,6 +394,32 @@ class ContactFormPlugin extends GenericPlugin
     public function getIntSetting(int $contextId, string $name): int
     {
         return (int) $this->getSettingOrDefault($contextId, $name);
+    }
+
+    /**
+     * Read a per-locale setting in the visitor's locale, falling back to the
+     * primary locale and then to whatever has been filled in at all.
+     */
+    public function getLocalizedSetting(int $contextId, string $name): string
+    {
+        $value = $this->getSetting($contextId, $name);
+
+        if (!is_array($value)) {
+            return is_scalar($value) ? (string) $value : '';
+        }
+
+        $value = array_filter($value, fn ($localized) => is_string($localized) && trim($localized) !== '');
+        if ($value === []) {
+            return '';
+        }
+
+        foreach ([Locale::getLocale(), Locale::getPrimaryLocale()] as $locale) {
+            if (isset($value[$locale])) {
+                return (string) $value[$locale];
+            }
+        }
+
+        return (string) reset($value);
     }
 
     public function getBoolSetting(int $contextId, string $name): bool
