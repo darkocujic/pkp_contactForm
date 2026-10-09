@@ -41,7 +41,7 @@ The repo root **is** the plugin directory. It installs to `plugins/generic/conta
 
 ## Local tooling
 The system PHP on this machine is 7.4, which cannot parse PHP 8 syntax. Lint with a PHP 8.1+ binary
-(a portable build in the session scratchpad is fine) — never conclude a file is clean from a 7.4
+(a portable 8.2 build lives at `C:/Users/drCh/.local/php82/php.exe`) — never conclude a file is clean from a 7.4
 `php -l`. CI covers 8.1/8.2/8.3.
 
 ## Definition of done for any change

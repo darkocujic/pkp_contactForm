@@ -1,0 +1,17 @@
+# Normalise everything to LF in the repository; the plugin is deployed on Linux
+# and CRLF would break shell scripts and confuse gettext tooling.
+* text=auto eol=lf
+
+*.php text eol=lf
+*.tpl text eol=lf
+*.po  text eol=lf
+*.xml text eol=lf
+*.sh  text eol=lf
+*.md  text eol=lf
+
+# Not shipped in release tarballs
+/ojs/          export-ignore
+/tests/        export-ignore
+/cypress/      export-ignore
+/.github/      export-ignore
+/tools/        export-ignore
