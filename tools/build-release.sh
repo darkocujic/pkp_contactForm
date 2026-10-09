@@ -39,7 +39,7 @@ fi
 # directory on a public server should hold only what it needs.
 is_excluded() {
 	case "$1" in
-		ojs/*|tests/*|cypress/*|.github/*|tools/*) return 0 ;;
+		ojs/*|tests/*|cypress/*|.github/*|tools/*|.claude/*) return 0 ;;
 		phpunit.xml|.php-cs-fixer.dist.php|.gitattributes|.gitignore|CLAUDE.md) return 0 ;;
 		*) return 1 ;;
 	esac

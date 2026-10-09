@@ -104,6 +104,23 @@ All five report the *same* generic error to the visitor. Telling a bot which che
 free tuning advice; genuine mistakes (a missing name, a malformed address) still get a specific,
 helpful message.
 
+### Rate limiting depends on `trust_x_forwarded_for`
+
+OJS resolves the visitor's address with `PKPRequest::getRemoteAddr()`, which **trusts the
+`X-Forwarded-For` header by default** (`general.trust_x_forwarded_for` defaults to on). If your
+installation is *not* behind a reverse proxy that sets that header itself, a client can send any
+value it likes and so defeat the per-visitor limit — and the same applies to the address OJS hands
+to reCAPTCHA.
+
+If OJS is reached directly, set this in `config.inc.php`:
+
+```ini
+[general]
+trust_x_forwarded_for = Off
+```
+
+The per-journal limit is unaffected either way, so total volume stays capped regardless.
+
 ## Privacy
 
 Stored messages contain the name, email address and message text the visitor submitted. The

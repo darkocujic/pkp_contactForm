@@ -10,7 +10,7 @@
  *
  * The classes under test are deliberately free of OJS dependencies, so the
  * suite needs neither Composer nor a running OJS installation: it just loads
- * the three guard classes directly.
+ * them directly.
  */
 
 declare(strict_types=1);
@@ -18,3 +18,4 @@ declare(strict_types=1);
 require_once __DIR__ . '/../classes/spam/HoneypotGuard.php';
 require_once __DIR__ . '/../classes/spam/ContentHeuristics.php';
 require_once __DIR__ . '/../classes/spam/Throttle.php';
+require_once __DIR__ . '/../classes/EmailSafeText.php';

@@ -23,9 +23,6 @@ use Throwable;
 
 class ContactFormMailer
 {
-    /** Display names in headers are capped; nothing legitimate needs more. */
-    public const MAX_HEADER_NAME_LENGTH = 120;
-
     private ContactFormPlugin $plugin;
 
     public function __construct(ContactFormPlugin $plugin)
@@ -56,7 +53,7 @@ class ContactFormMailer
             $mailable = new ContactFormNotification($context);
 
             $this->setFrom($mailable, $context, $recipient);
-            $mailable->to($recipient, $this->headerSafe($this->plugin->getRecipientName($context)));
+            $mailable->to($recipient, EmailSafeText::forHeader($this->plugin->getRecipientName($context)));
 
             foreach ($this->plugin->getCcEmails($context->getId()) as $cc) {
                 $mailable->cc($cc);
@@ -64,14 +61,18 @@ class ContactFormMailer
 
             // The visitor is the Reply-To, never the From: forging the From
             // would fail SPF/DKIM and get the whole journal's mail filtered.
-            $mailable->replyTo($submission->senderEmail, $this->headerSafe($submission->senderName));
+            // Re-validated here rather than trusted from the form, so nothing
+            // reaches a header on the strength of an earlier check alone.
+            if (filter_var($submission->senderEmail, FILTER_VALIDATE_EMAIL)) {
+                $mailable->replyTo($submission->senderEmail, EmailSafeText::forHeader($submission->senderName));
+            }
 
             $mailable->addData([
-                ContactFormNotification::VARIABLE_SENDER_NAME => $this->forTemplate($submission->senderName),
-                ContactFormNotification::VARIABLE_SENDER_EMAIL => $this->forTemplate($submission->senderEmail),
-                ContactFormNotification::VARIABLE_MESSAGE_SUBJECT => $this->forTemplate((string) $submission->subject),
-                ContactFormNotification::VARIABLE_MESSAGE_BODY => $this->forTemplate($submission->body),
-                ContactFormNotification::VARIABLE_SUBMITTED_AT => $this->forTemplate((string) $submission->dateSubmitted),
+                ContactFormNotification::VARIABLE_SENDER_NAME => EmailSafeText::forTemplate($submission->senderName),
+                ContactFormNotification::VARIABLE_SENDER_EMAIL => EmailSafeText::forTemplate($submission->senderEmail),
+                ContactFormNotification::VARIABLE_MESSAGE_SUBJECT => EmailSafeText::forTemplate((string) $submission->subject),
+                ContactFormNotification::VARIABLE_MESSAGE_BODY => EmailSafeText::forTemplate($submission->body),
+                ContactFormNotification::VARIABLE_SUBMITTED_AT => EmailSafeText::forTemplate((string) $submission->dateSubmitted),
             ]);
 
             $this->setSubjectAndBody(
@@ -114,10 +115,10 @@ class ContactFormMailer
             $mailable = new ContactFormAcknowledgement($context);
 
             $this->setFrom($mailable, $context, $this->plugin->getRecipientEmail($context));
-            $mailable->to($submission->senderEmail, $this->headerSafe($submission->senderName));
+            $mailable->to($submission->senderEmail, EmailSafeText::forHeader($submission->senderName));
 
             $mailable->addData([
-                ContactFormAcknowledgement::VARIABLE_SUBMITTED_AT => $this->forTemplate((string) $submission->dateSubmitted),
+                ContactFormAcknowledgement::VARIABLE_SUBMITTED_AT => EmailSafeText::forTemplate((string) $submission->dateSubmitted),
             ]);
 
             $this->setSubjectAndBody(
@@ -151,7 +152,7 @@ class ContactFormMailer
             $fromEmail = $fallbackEmail;
         }
 
-        $mailable->from($fromEmail, $this->headerSafe((string) $context->getData('contactName')));
+        $mailable->from($fromEmail, EmailSafeText::forHeader((string) $context->getData('contactName')));
     }
 
     /**
@@ -180,34 +181,5 @@ class ContactFormMailer
         }
 
         $mailable->subject($subject)->body($body);
-    }
-
-    /**
-     * Make a value safe to place in an email header: no line breaks (which
-     * would let a submitter append headers of their own) and bounded length.
-     */
-    private function headerSafe(string $value): ?string
-    {
-        $value = trim(preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '');
-        if ($value === '') {
-            return null;
-        }
-
-        return mb_substr($value, 0, self::MAX_HEADER_NAME_LENGTH);
-    }
-
-    /**
-     * Make a submitted value safe to substitute into an email template.
-     *
-     * Two separate hazards: the templates are HTML, and core substitutes
-     * variables with preg_replace(), where "$1" and "\1" in a *replacement*
-     * are backreferences. Both are neutralised here.
-     */
-    private function forTemplate(string $value): string
-    {
-        $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-        $value = nl2br($value, false);
-
-        return str_replace(['\\', '$'], ['\\\\', '\\$'], $value);
     }
 }

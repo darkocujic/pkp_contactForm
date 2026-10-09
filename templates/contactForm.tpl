@@ -50,12 +50,19 @@
 		</div>
 	{/if}
 
+	{*
+	 * Error messages are escaped, unlike common/formErrors.tpl: PKP's __()
+	 * substitutes parameters without escaping them, and some core validators
+	 * pass the submitted value as one (FormValidatorEmail always supplies
+	 * {$email}). None of this plugin's messages use such a parameter, and
+	 * escaping here means adding one later cannot turn into an injection.
+	 *}
 	{if $isError}
 		<div class="cmp_notification error" id="contactFormErrors" role="alert" tabindex="-1">
 			<p>{translate key="form.errorsOccurred"}</p>
 			<ul>
 				{foreach from=$errors item=message}
-					<li>{$message}</li>
+					<li>{$message|escape}</li>
 				{/foreach}
 			</ul>
 		</div>
@@ -96,7 +103,7 @@
 						autocomplete="name" required aria-required="true"
 						{if !empty($errors.senderName)}aria-invalid="true" aria-describedby="contactFormSenderNameError"{/if} />
 					{if !empty($errors.senderName)}
-						<span class="pkp_form_error" id="contactFormSenderNameError">{$errors.senderName}</span>
+						<span class="pkp_form_error" id="contactFormSenderNameError">{$errors.senderName|escape}</span>
 					{/if}
 				</div>
 
@@ -117,7 +124,7 @@
 						{translate key="plugins.generic.contactForm.field.email.description"}
 					</span>
 					{if !empty($errors.senderEmail)}
-						<span class="pkp_form_error" id="contactFormSenderEmailError">{$errors.senderEmail}</span>
+						<span class="pkp_form_error" id="contactFormSenderEmailError">{$errors.senderEmail|escape}</span>
 					{/if}
 				</div>
 
@@ -136,7 +143,7 @@
 						{if $requireSubject}required aria-required="true"{/if}
 						{if !empty($errors.subject)}aria-invalid="true" aria-describedby="contactFormSubjectError"{/if} />
 					{if !empty($errors.subject)}
-						<span class="pkp_form_error" id="contactFormSubjectError">{$errors.subject}</span>
+						<span class="pkp_form_error" id="contactFormSubjectError">{$errors.subject|escape}</span>
 					{/if}
 				</div>
 
@@ -152,7 +159,7 @@
 						maxlength="{$maxLengths.body}" required aria-required="true"
 						{if !empty($errors.body)}aria-invalid="true" aria-describedby="contactFormBodyError"{/if}>{$body|default:''|escape}</textarea>
 					{if !empty($errors.body)}
-						<span class="pkp_form_error" id="contactFormBodyError">{$errors.body}</span>
+						<span class="pkp_form_error" id="contactFormBodyError">{$errors.body|escape}</span>
 					{/if}
 				</div>
 			</div>
