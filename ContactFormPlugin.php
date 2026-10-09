@@ -30,6 +30,13 @@ use PKP\plugins\Hook;
 
 class ContactFormPlugin extends GenericPlugin
 {
+    /**
+     * The name this plugin is registered under: LazyLoadPlugin derives it from
+     * the lower-cased class name. Needed wherever the plugin has to be looked
+     * up rather than injected, such as from a scheduled task.
+     */
+    public const REGISTRY_NAME = 'contactformplugin';
+
     /** Fallback URL segment for the public page, e.g. /index.php/journal/contactForm */
     public const DEFAULT_PAGE_PATH = 'contactForm';
 
@@ -100,6 +107,12 @@ class ContactFormPlugin extends GenericPlugin
         // Nothing below is safe (or useful) before the database exists.
         if (!Application::isInstalled() || Application::isUpgrading()) {
             return true;
+        }
+
+        if ($this->getName() !== self::REGISTRY_NAME) {
+            // Would silently break the scheduled task, which has to look the
+            // plugin up by name.
+            error_log('contactForm: REGISTRY_NAME is stale, the plugin registers as ' . $this->getName());
         }
 
         if ($this->getEnabled($mainContextId)) {
@@ -311,15 +324,6 @@ class ContactFormPlugin extends GenericPlugin
                 }
                 return new JSONMessage(true, $form->fetch($request));
 
-            case 'deleteMessage':
-                // State-changing: require a real POST carrying this session's token.
-                if (!$request->isPost() || !$request->checkCSRF()) {
-                    return new JSONMessage(false);
-                }
-                $this->getSubmissionRepository()
-                    ->delete((int) $request->getUserVar('submissionId'), $context->getId());
-                // Then re-render the list.
-                // no break
             case 'messages':
                 return new JSONMessage(true, $this->renderMessages($request));
         }
@@ -336,6 +340,7 @@ class ContactFormPlugin extends GenericPlugin
     {
         $contextId = $request->getContext()->getId();
 
+        $this->deleteRequestedMessage($request, $contextId);
         $this->maybePurge($contextId);
 
         $repository = $this->getSubmissionRepository();
@@ -358,6 +363,34 @@ class ContactFormPlugin extends GenericPlugin
         ]);
 
         return $templateMgr->fetch($this->getTemplateResource('messages.tpl'));
+    }
+
+    /**
+     * Honour a delete request from the messages list.
+     *
+     * Deleting is state-changing, so it needs a real POST carrying this
+     * session's CSRF token. The context id is passed on to the repository so a
+     * forged id cannot reach another journal's archive.
+     *
+     * @param \PKP\core\PKPRequest $request
+     */
+    private function deleteRequestedMessage($request, int $contextId): void
+    {
+        $submissionId = (int) $request->getUserVar('deleteSubmissionId');
+        if ($submissionId < 1) {
+            return;
+        }
+
+        if (!$request->isPost() || !$request->checkCSRF()) {
+            error_log('contactForm: ignored a message delete that was not a valid POST');
+            return;
+        }
+
+        try {
+            $this->getSubmissionRepository()->delete($submissionId, $contextId);
+        } catch (Exception $exception) {
+            error_log('contactForm: could not delete a message: ' . $exception->getMessage());
+        }
     }
 
     //

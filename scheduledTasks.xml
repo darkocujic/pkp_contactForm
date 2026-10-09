@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  * scheduledTasks.xml
+  *
+  * Copyright (c) 2026 the contactForm plugin authors
+  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
+  *
+  * Scheduled tasks for the Contact Form plugin. Discovered by the Acron plugin
+  * through the AcronPlugin::parseCronTab hook, or run from the command line
+  * with tools/runScheduledTasks.php.
+  -->
+
+<!DOCTYPE scheduled_tasks SYSTEM "../../../lib/pkp/dtd/scheduledTasks.dtd">
+
+<scheduled_tasks>
+	<task class="APP\plugins\generic\contactForm\classes\tasks\PurgeSubmissions">
+		<descr>Delete archived contact form messages that are past their retention period.</descr>
+		<frequency day="1"/>
+	</task>
+</scheduled_tasks>

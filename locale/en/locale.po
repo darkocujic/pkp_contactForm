@@ -121,3 +121,151 @@ msgstr "The message the visitor entered"
 
 msgid "plugins.generic.contactForm.emails.variable.submittedAt"
 msgstr "The date and time the message was received"
+
+msgid "plugins.generic.contactForm.settings.page"
+msgstr "The page"
+
+msgid "plugins.generic.contactForm.settings.page.description"
+msgstr ""
+"The form is published at <a href=\"{$url}\">{$url}</a>. Add a link to it "
+"under Settings &gt; Website &gt; Navigation using the \"Contact form\" item "
+"type."
+
+msgid "plugins.generic.contactForm.settings.pagePath"
+msgstr "Page address"
+
+msgid "plugins.generic.contactForm.settings.pageTitle"
+msgstr "Page title"
+
+msgid "plugins.generic.contactForm.settings.introText"
+msgstr "Introduction shown above the form"
+
+msgid "plugins.generic.contactForm.settings.recipient"
+msgstr "Where messages go"
+
+msgid "plugins.generic.contactForm.settings.recipientEmail"
+msgstr "Recipient email address"
+
+msgid "plugins.generic.contactForm.settings.recipientName"
+msgstr "Recipient name"
+
+msgid "plugins.generic.contactForm.settings.ccEmails"
+msgstr "Copy to (one address per line, up to ten)"
+
+msgid "plugins.generic.contactForm.settings.requireSubject"
+msgstr "Require a subject"
+
+msgid "plugins.generic.contactForm.settings.enableAcknowledgement"
+msgstr "Send an acknowledgement to the visitor"
+
+msgid "plugins.generic.contactForm.settings.enableAcknowledgement.warning"
+msgstr ""
+"Acknowledgements are sent to whatever address the visitor types, so enabling "
+"this lets anyone make this journal send mail to a third party. The "
+"acknowledgement deliberately contains none of the visitor's own text, and it "
+"counts against the rate limits below."
+
+msgid "plugins.generic.contactForm.settings.spam"
+msgstr "Spam protection"
+
+msgid "plugins.generic.contactForm.settings.captcha.on"
+msgstr ""
+"reCAPTCHA is configured for this installation, so the form shows a challenge."
+
+msgid "plugins.generic.contactForm.settings.captcha.off"
+msgstr ""
+"reCAPTCHA is not configured for this installation, so no challenge is shown. "
+"To enable it, set recaptcha and the two key options in the [captcha] section "
+"of config.inc.php. The other protections below work regardless."
+
+msgid "plugins.generic.contactForm.settings.honeypotMinSeconds"
+msgstr "Minimum seconds before a message may be sent (0 to disable)"
+
+msgid "plugins.generic.contactForm.settings.honeypotMaxSeconds"
+msgstr "Maximum seconds a form stays valid (0 to disable)"
+
+msgid "plugins.generic.contactForm.settings.regenerateHoneypotField"
+msgstr "Give the hidden decoy field a new name when saving"
+
+msgid "plugins.generic.contactForm.settings.honeypotFieldName"
+msgstr "The decoy field is currently named \"{$name}\"."
+
+msgid "plugins.generic.contactForm.settings.maxUrls"
+msgstr "Links allowed in a message"
+
+msgid "plugins.generic.contactForm.settings.maxPerHourPerIp"
+msgstr "Messages per hour from one visitor (0 for no limit)"
+
+msgid "plugins.generic.contactForm.settings.maxPerHourPerContext"
+msgstr "Messages per hour for this journal (0 for no limit)"
+
+msgid "plugins.generic.contactForm.settings.blocklist"
+msgstr "Blocked words, one per line"
+
+msgid "plugins.generic.contactForm.settings.retention"
+msgstr "Stored messages"
+
+msgid "plugins.generic.contactForm.settings.retentionDays"
+msgstr "Keep messages for this many days"
+
+msgid "plugins.generic.contactForm.settings.retentionDays.description"
+msgstr ""
+"Use 0 to keep messages indefinitely. Stored messages contain personal data, "
+"so choose a period your privacy policy supports and mention the contact form "
+"in the journal's privacy statement."
+
+msgid "plugins.generic.contactForm.settings.error.pagePath"
+msgstr "The page address is required and may contain only letters and digits."
+
+msgid "plugins.generic.contactForm.settings.error.recipientEmail"
+msgstr ""
+"Enter a valid recipient email address, or leave it empty to use the "
+"journal's principal contact."
+
+msgid "plugins.generic.contactForm.settings.error.ccEmails"
+msgstr "One of the copy-to addresses is not a valid email address."
+
+msgid "plugins.generic.contactForm.settings.error.number"
+msgstr "Enter a whole number of 0 or more."
+
+msgid "plugins.generic.contactForm.settings.error.timing"
+msgstr "The minimum time must be shorter than the maximum time."
+
+msgid "plugins.generic.contactForm.messages.count"
+msgstr "{$total} message(s) stored."
+
+msgid "plugins.generic.contactForm.messages.retention"
+msgstr "Messages are deleted automatically after {$days} day(s)."
+
+msgid "plugins.generic.contactForm.messages.retention.forever"
+msgstr "Messages are kept indefinitely."
+
+msgid "plugins.generic.contactForm.messages.none"
+msgstr "No messages have been received yet."
+
+msgid "plugins.generic.contactForm.messages.received"
+msgstr "Received"
+
+msgid "plugins.generic.contactForm.messages.from"
+msgstr "From"
+
+msgid "plugins.generic.contactForm.messages.delivered"
+msgstr "Emailed"
+
+msgid "plugins.generic.contactForm.messages.showMessage"
+msgstr "Show message"
+
+msgid "plugins.generic.contactForm.messages.confirmDelete"
+msgstr "Permanently delete this message?"
+
+msgid "plugins.generic.contactForm.messages.page"
+msgstr "Page {$current} of {$last}"
+
+msgid "plugins.generic.contactForm.task.purge"
+msgstr "Delete expired contact form messages"
+
+msgid "plugins.generic.contactForm.task.purge.notInstalled"
+msgstr "The Contact Form plugin could not be loaded; nothing was deleted."
+
+msgid "plugins.generic.contactForm.task.purge.removed"
+msgstr "Deleted {$count} expired contact form message(s)."
