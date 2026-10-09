@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE emails SYSTEM "../../../lib/pkp/dtd/emailTemplates.dtd">
+<!--
+  * emailTemplates.xml
+  *
+  * Copyright (c) 2026 the contactForm plugin authors
+  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
+  *
+  * Email templates installed by the Contact Form plugin. Journal managers can
+  * edit the text under Settings > Workflow > Emails.
+  -->
+<emails>
+	<email key="CONTACT_FORM_NOTIFICATION"
+		name="plugins.generic.contactForm.emails.notification.name"
+		subject="emails.contactFormNotification.subject"
+		body="emails.contactFormNotification.body"/>
+	<email key="CONTACT_FORM_ACKNOWLEDGEMENT"
+		name="plugins.generic.contactForm.emails.acknowledgement.name"
+		subject="emails.contactFormAcknowledgement.subject"
+		body="emails.contactFormAcknowledgement.body"/>
+</emails>
