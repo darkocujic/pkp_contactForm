@@ -69,4 +69,30 @@ class EmailSafeText
 
         return mb_substr($value, 0, self::MAX_HEADER_NAME_LENGTH);
     }
+
+    /**
+     * Replace a single `{$name}` token in an email subject or body with a
+     * literal value.
+     *
+     * This exists because PKP\mail\Mailable's own token substitution cannot
+     * always be trusted for the handful of context values this plugin's
+     * templates reference: as of OJS 3.4,
+     * PKP\mail\variables\ContextEmailVariable::values() never returns
+     * `contextSignature` at all (the method that would compute it,
+     * getContextSignature(), exists but is dead code — never called), and
+     * this plugin has no way to know every OJS patch version's exact
+     * behaviour for the values it does claim to support, such as
+     * `contextName`. Since the caller already holds the correct value
+     * directly, substituting it here guarantees the result rather than
+     * trusting a mechanism that has already proven unreliable for one of
+     * these tokens.
+     *
+     * A plain str_replace(), not preg_replace(): $value is never read as a
+     * backreference pattern, so a `$` or `\` in it reaches the email exactly
+     * as given.
+     */
+    public static function substituteToken(string $text, string $name, string $value): string
+    {
+        return str_replace('{$' . $name . '}', $value, $text);
+    }
 }

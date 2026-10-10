@@ -180,6 +180,12 @@ class ContactFormMailer
             $body = __($bodyKey);
         }
 
+        // Guaranteed ourselves rather than left to Mailable's own variable
+        // resolution — see EmailSafeText::substituteToken() for why.
+        $contextName = htmlspecialchars((string) $context->getLocalizedData('name'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $subject = EmailSafeText::substituteToken($subject, 'contextName', $contextName);
+        $body = EmailSafeText::substituteToken($body, 'contextName', $contextName);
+
         $mailable->subject($subject)->body($body);
     }
 }

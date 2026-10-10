@@ -148,4 +148,43 @@ class EmailSafeTextTest extends TestCase
         // the whole display name to be discarded.
         $this->assertNotNull(EmailSafeText::forHeader("Ada \xB1\x31"));
     }
+
+    public function testSubstituteTokenReplacesTheToken(): void
+    {
+        $this->assertSame(
+            'Hello Example Journal, welcome',
+            EmailSafeText::substituteToken('Hello {$contextName}, welcome', 'contextName', 'Example Journal')
+        );
+    }
+
+    public function testSubstituteTokenReplacesEveryOccurrence(): void
+    {
+        $this->assertSame(
+            'Dear X, this is X writing about X',
+            EmailSafeText::substituteToken('Dear {$name}, this is {$name} writing about {$name}', 'name', 'X')
+        );
+    }
+
+    public function testSubstituteTokenOnlyTouchesTheNamedToken(): void
+    {
+        $result = EmailSafeText::substituteToken('{$contextName} and {$contextSignature}', 'contextName', 'Example');
+
+        $this->assertSame('Example and {$contextSignature}', $result);
+    }
+
+    public function testSubstituteTokenLeavesTextWithNoTokenUnchanged(): void
+    {
+        $this->assertSame('No tokens here', EmailSafeText::substituteToken('No tokens here', 'contextName', 'Example'));
+    }
+
+    public function testSubstituteTokenTreatsTheValueAsALiteral(): void
+    {
+        // Unlike preg_replace(), str_replace() never reads the replacement as
+        // a backreference pattern, so a "$" or "\" in the value must appear
+        // in the output exactly as given, not interpreted or doubled.
+        $this->assertSame(
+            'Pay $1 to J. Willinsky\\1 Journal',
+            EmailSafeText::substituteToken('Pay $1 to {$contextName}', 'contextName', 'J. Willinsky\\1 Journal')
+        );
+    }
 }
