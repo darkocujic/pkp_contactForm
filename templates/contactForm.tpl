@@ -34,13 +34,13 @@
 
 	{if $contactFormSent}
 		<div class="cmp_notification" role="status">
-			{translate key="plugins.generic.contactForm.sent"}
+			<div class="success">{translate key="plugins.generic.contactForm.sent"}</div>
 		</div>
 	{/if}
 
 	{if $contactFormFailed}
-		<div class="cmp_notification error" role="alert">
-			{translate key="plugins.generic.contactForm.error.notSent"}
+		<div class="cmp_notification" role="alert">
+			<div class="no">{translate key="plugins.generic.contactForm.error.notSent"}</div>
 		</div>
 	{/if}
 
@@ -50,29 +50,29 @@
 		</div>
 	{/if}
 
-	{*
-	 * Error messages are escaped, unlike common/formErrors.tpl: PKP's __()
-	 * substitutes parameters without escaping them, and some core validators
-	 * pass the submitted value as one (FormValidatorEmail always supplies
-	 * {$email}). None of this plugin's messages use such a parameter, and
-	 * escaping here means adding one later cannot turn into an injection.
-	 *}
-	{if $isError}
-		<div class="cmp_notification error" id="contactFormErrors" role="alert" tabindex="-1">
-			<p>{translate key="form.errorsOccurred"}</p>
-			<ul>
-				{foreach from=$errors item=message}
-					<li>{$message|escape}</li>
-				{/foreach}
-			</ul>
-		</div>
-	{/if}
-
 	<p>{translate key="common.requiredField"}</p>
 
 	<form class="cmp_form contact_form" id="contactForm" method="post"
 		action="{url page=$pluginPagePath op="submit" router=\PKP\core\PKPApplication::ROUTE_PAGE}" role="form">
 		{csrf}
+
+		{*
+		 * Error messages are escaped, unlike common/formErrors.tpl: PKP's __()
+		 * substitutes parameters without escaping them, and some core validators
+		 * pass the submitted value as one (FormValidatorEmail always supplies
+		 * {$email}). None of this plugin's messages use such a parameter, and
+		 * escaping here means adding one later cannot turn into an injection.
+		 *}
+		{if $isError}
+			<div class="pkp_form_error" id="contactFormErrors" role="alert" tabindex="-1">
+				<p>{translate key="form.errorsOccurred"}</p>
+				<ul>
+					{foreach from=$errors item=message}
+						<li>{$message|escape}</li>
+					{/foreach}
+				</ul>
+			</div>
+		{/if}
 
 		<input type="hidden" name="{$honeypotTimestampField|escape}" value="{$honeypotTimestampToken|escape}" />
 
@@ -90,46 +90,46 @@
 			<legend class="pkp_screen_reader">{translate key="plugins.generic.contactForm.page.title"}</legend>
 
 			<div class="fields">
-				<div class="senderName{if !empty($errors.senderName)} error{/if}">
-					<label for="contactFormSenderName">
+				<div class="senderName">
+					<label>
 						<span class="label">
 							{translate key="plugins.generic.contactForm.field.name"}
 							<span class="required" aria-hidden="true">*</span>
 							<span class="pkp_screen_reader">{translate key="common.required"}</span>
 						</span>
+						<input type="text" id="contactFormSenderName" name="senderName"
+							value="{$senderName|default:''|escape}" maxlength="{$maxLengths.name}"
+							autocomplete="name" required aria-required="true"
+							{if !empty($errors.senderName)}aria-invalid="true" aria-describedby="contactFormSenderNameError"{/if} />
 					</label>
-					<input type="text" id="contactFormSenderName" name="senderName"
-						value="{$senderName|default:''|escape}" maxlength="{$maxLengths.name}"
-						autocomplete="name" required aria-required="true"
-						{if !empty($errors.senderName)}aria-invalid="true" aria-describedby="contactFormSenderNameError"{/if} />
 					{if !empty($errors.senderName)}
-						<span class="pkp_form_error" id="contactFormSenderNameError">{$errors.senderName|escape}</span>
+						<span class="error" id="contactFormSenderNameError">{$errors.senderName|escape}</span>
 					{/if}
 				</div>
 
-				<div class="senderEmail{if !empty($errors.senderEmail)} error{/if}">
-					<label for="contactFormSenderEmail">
+				<div class="senderEmail">
+					<label>
 						<span class="label">
 							{translate key="plugins.generic.contactForm.field.email"}
 							<span class="required" aria-hidden="true">*</span>
 							<span class="pkp_screen_reader">{translate key="common.required"}</span>
 						</span>
+						<input type="email" id="contactFormSenderEmail" name="senderEmail"
+							value="{$senderEmail|default:''|escape}" maxlength="{$maxLengths.email}"
+							autocomplete="email" required aria-required="true"
+							aria-describedby="contactFormSenderEmailDescription{if !empty($errors.senderEmail)} contactFormSenderEmailError{/if}"
+							{if !empty($errors.senderEmail)}aria-invalid="true"{/if} />
 					</label>
-					<input type="email" id="contactFormSenderEmail" name="senderEmail"
-						value="{$senderEmail|default:''|escape}" maxlength="{$maxLengths.email}"
-						autocomplete="email" required aria-required="true"
-						aria-describedby="contactFormSenderEmailDescription{if !empty($errors.senderEmail)} contactFormSenderEmailError{/if}"
-						{if !empty($errors.senderEmail)}aria-invalid="true"{/if} />
 					<span class="description" id="contactFormSenderEmailDescription">
 						{translate key="plugins.generic.contactForm.field.email.description"}
 					</span>
 					{if !empty($errors.senderEmail)}
-						<span class="pkp_form_error" id="contactFormSenderEmailError">{$errors.senderEmail|escape}</span>
+						<span class="error" id="contactFormSenderEmailError">{$errors.senderEmail|escape}</span>
 					{/if}
 				</div>
 
-				<div class="subject{if !empty($errors.subject)} error{/if}">
-					<label for="contactFormSubject">
+				<div class="subject">
+					<label>
 						<span class="label">
 							{translate key="plugins.generic.contactForm.field.subject"}
 							{if $requireSubject}
@@ -137,29 +137,29 @@
 								<span class="pkp_screen_reader">{translate key="common.required"}</span>
 							{/if}
 						</span>
+						<input type="text" id="contactFormSubject" name="subject"
+							value="{$subject|default:''|escape}" maxlength="{$maxLengths.subject}"
+							{if $requireSubject}required aria-required="true"{/if}
+							{if !empty($errors.subject)}aria-invalid="true" aria-describedby="contactFormSubjectError"{/if} />
 					</label>
-					<input type="text" id="contactFormSubject" name="subject"
-						value="{$subject|default:''|escape}" maxlength="{$maxLengths.subject}"
-						{if $requireSubject}required aria-required="true"{/if}
-						{if !empty($errors.subject)}aria-invalid="true" aria-describedby="contactFormSubjectError"{/if} />
 					{if !empty($errors.subject)}
-						<span class="pkp_form_error" id="contactFormSubjectError">{$errors.subject|escape}</span>
+						<span class="error" id="contactFormSubjectError">{$errors.subject|escape}</span>
 					{/if}
 				</div>
 
-				<div class="body{if !empty($errors.body)} error{/if}">
-					<label for="contactFormBody">
+				<div class="body">
+					<label>
 						<span class="label">
 							{translate key="plugins.generic.contactForm.field.message"}
 							<span class="required" aria-hidden="true">*</span>
 							<span class="pkp_screen_reader">{translate key="common.required"}</span>
 						</span>
+						<textarea id="contactFormBody" name="body" rows="10" cols="60"
+							maxlength="{$maxLengths.body}" required aria-required="true"
+							{if !empty($errors.body)}aria-invalid="true" aria-describedby="contactFormBodyError"{/if}>{$body|default:''|escape}</textarea>
 					</label>
-					<textarea id="contactFormBody" name="body" rows="10" cols="60"
-						maxlength="{$maxLengths.body}" required aria-required="true"
-						{if !empty($errors.body)}aria-invalid="true" aria-describedby="contactFormBodyError"{/if}>{$body|default:''|escape}</textarea>
 					{if !empty($errors.body)}
-						<span class="pkp_form_error" id="contactFormBodyError">{$errors.body|escape}</span>
+						<span class="error" id="contactFormBodyError">{$errors.body|escape}</span>
 					{/if}
 				</div>
 			</div>
