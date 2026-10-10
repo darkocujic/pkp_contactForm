@@ -12,7 +12,7 @@
 <version>
 	<application>contactForm</application>
 	<type>plugins.generic</type>
-	<release>1.0.2.0</release>
+	<release>1.0.3.0</release>
 	<date>2026-10-10</date>
 	<lazy-load>1</lazy-load>
 	<class>ContactFormPlugin</class>

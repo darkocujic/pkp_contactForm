@@ -77,6 +77,9 @@ class ContactFormPlugin extends GenericPlugin
     /** @var SubmissionRepository|null Lazily constructed */
     private $submissionRepository = null;
 
+    /** Whether ensureSchema() has already run for this request */
+    private bool $schemaChecked = false;
+
     /**
      * @copydoc Plugin::getDisplayName()
      */
@@ -405,10 +408,45 @@ class ContactFormPlugin extends GenericPlugin
 
     public function getSubmissionRepository(): SubmissionRepository
     {
+        $this->ensureSchema();
+
         if ($this->submissionRepository === null) {
             $this->submissionRepository = new SubmissionRepository();
         }
         return $this->submissionRepository;
+    }
+
+    /**
+     * Create the submissions table if it's missing, once per request.
+     *
+     * OJS only runs a plugin's migration automatically in two cases: a
+     * brand-new install via Upload A New Plugin, and an in-place upgrade via
+     * the same UI *if the plugin ships an upgrade.xml*. Neither path runs for
+     * a plugin whose files were copied onto the server directly rather than
+     * uploaded, and the second needs upgrade.xml to exist at all
+     * (PluginHelper::upgradePlugin() silently skips the installer step
+     * without it — see upgrade.xml in this plugin's root, added after this
+     * exact gap caused a live "table doesn't exist" error). Checking here
+     * means the table self-heals regardless of how the plugin got onto the
+     * server, instead of depending on a lifecycle hook with multiple gaps.
+     *
+     * Schema::hasTable() is a cheap single query, and
+     * ContactFormSchemaMigration::up() already no-ops if the table exists,
+     * so this costs one extra query per request on the pages that actually
+     * touch submissions, and nothing on every other page.
+     */
+    private function ensureSchema(): void
+    {
+        if ($this->schemaChecked) {
+            return;
+        }
+        $this->schemaChecked = true;
+
+        try {
+            (new ContactFormSchemaMigration())->up();
+        } catch (Exception $exception) {
+            error_log('contactForm: could not verify/create its database table: ' . $exception->getMessage());
+        }
     }
 
     /**

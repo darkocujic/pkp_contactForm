@@ -34,6 +34,24 @@ git clone https://github.com/<owner>/contactForm.git contactForm
 
 The directory **must** be named `contactForm` — OJS derives the plugin class name from it.
 
+Copying the files onto the server this way skips OJS's installer entirely — nothing creates the
+`contact_form_submissions` table for you. Enable the plugin, then open its **Settings** or
+**Messages** modal once; the plugin checks for its own table on first use and creates it if
+missing, so this is enough on its own.
+
+### Troubleshooting: "Table ... doesn't exist"
+
+If you see a `contact_form_submissions` / `Base table or view not found` error, the table was
+never created. This happens with plugin files copied directly onto the server (see above), and it
+could also happen on an **older copy of this plugin before v1.0.3.0** when re-uploading a new
+version over an existing install — OJS only re-runs a plugin's installer on upgrade if the plugin
+ships an `upgrade.xml`, which earlier releases of this plugin didn't.
+
+Re-uploading the current tarball and opening **Settings** or **Messages** once is enough to fix
+it — the self-healing above creates the table immediately. If it still doesn't appear, check that
+the OJS database user has `CREATE TABLE` privilege; the plugin logs the exact error via
+`error_log()` rather than showing it to you.
+
 ## Configuration
 
 Enable the plugin, then use its two actions in the plugin list:

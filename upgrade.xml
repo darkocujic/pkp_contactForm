@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE install SYSTEM "../../../lib/pkp/dtd/install.dtd">
+<!--
+  * upgrade.xml
+  *
+  * Copyright (c) 2026 the contactForm plugin authors
+  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
+  *
+  * This file has no content of its own — schema changes run through
+  * Installer::postInstall -> Plugin::updateSchema(), wired automatically in
+  * Plugin::register() whenever getInstallMigration() returns non-null.
+  *
+  * What matters is that this file simply EXISTS. PKP\plugins\PluginHelper::
+  * upgradePlugin() — the code path used when an already-installed plugin is
+  * upgraded by re-uploading a newer tarball through Dashboard > Settings >
+  * Website > Plugins > Upload A New Plugin — only runs the installer (and
+  * therefore the migration) when this file is present:
+  *
+  *   $upgradeFile = "{$destinyPath}/upgrade.xml";
+  *   if ($fileManager->fileExists($upgradeFile)) {
+  *       $installer = new Upgrade($params, $upgradeFile, true);
+  *       $installer->execute() || throw ...;
+  *   }
+  *
+  * Without it, that whole block is skipped: files are copied and the
+  * version record is updated, but the database is never touched. A fresh
+  * first-time install (Upload A New Plugin with nothing previously
+  * installed) does not need this file — that path always runs the full
+  * installer regardless, via install.xml or, absent that, PKP's own
+  * lib/pkp/xml/defaultPluginInstall.xml fallback.
+  *
+  * ContactFormPlugin also self-heals the table on its own (see
+  * ContactFormPlugin::ensureSchema()) as a second line of defence for
+  * deployments that never go through either installer path at all, such as
+  * copying the plugin's files directly onto the server.
+  -->
+<install />
