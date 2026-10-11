@@ -7,6 +7,19 @@ Versioning, to match every other plugin in the OJS ecosystem.
 
 ## [Unreleased]
 
+## [1.0.5.0] - 2026-10-11
+
+### Fixed
+
+- Opening an email template under Settings > Workflow > Emails could
+  return a 500 error (`summarize(): Argument #1 ($item) must be of type
+  EmailTemplate, null given`) for this plugin's notification or
+  acknowledgement template. OJS only creates a plugin's email templates
+  in the database by running its installer, which — like the submissions
+  table issue fixed in 1.0.3.0 — doesn't happen on every deployment path.
+  The plugin now checks for and creates its own email templates on first
+  use, the same way it already does for its database table.
+
 ### Changed
 
 - Made `LICENSE` self-contained with the full GPL v3 text, instead of
@@ -15,6 +28,9 @@ Versioning, to match every other plugin in the OJS ecosystem.
   incorrectly attributed Simon Fraser University / John Willinsky; this
   plugin contains no copied PKP source, so copyright belongs to its own
   authors, as every individual file header already said.
+- Added `.github/workflows/release.yml` and `CHANGELOG.md` itself: every
+  version bump now publishes a GitHub Release with that version's
+  changelog section attached, tarball included.
 
 ## [1.0.4.0] - 2026-10-10
 

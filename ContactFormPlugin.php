@@ -14,6 +14,7 @@
 namespace APP\plugins\generic\contactForm;
 
 use APP\core\Application;
+use APP\facades\Repo;
 use APP\plugins\generic\contactForm\classes\form\ContactFormSettingsForm;
 use APP\plugins\generic\contactForm\classes\mailables\ContactFormAcknowledgement;
 use APP\plugins\generic\contactForm\classes\mailables\ContactFormNotification;
@@ -80,6 +81,9 @@ class ContactFormPlugin extends GenericPlugin
     /** Whether ensureSchema() has already run for this request */
     private bool $schemaChecked = false;
 
+    /** Whether ensureEmailTemplatesInstalled() has already run for this request */
+    private bool $emailTemplatesChecked = false;
+
     /**
      * @copydoc Plugin::getDisplayName()
      */
@@ -130,6 +134,8 @@ class ContactFormPlugin extends GenericPlugin
             Hook::add('NavigationMenus::itemTypes', [$this, 'addNavigationMenuItemType']);
             Hook::add('NavigationMenus::displaySettings', [$this, 'setNavigationMenuItemDisplayDetails']);
             Hook::add('Mailer::Mailables', [$this, 'addMailables']);
+
+            $this->ensureEmailTemplatesInstalled();
         }
 
         return true;
@@ -447,6 +453,77 @@ class ContactFormPlugin extends GenericPlugin
         } catch (Exception $exception) {
             error_log('contactForm: could not verify/create its database table: ' . $exception->getMessage());
         }
+    }
+
+    /**
+     * Create this plugin's email templates if they're missing, once per
+     * request.
+     *
+     * Same root cause, same fix shape as ensureSchema() above: OJS only
+     * creates CONTACT_FORM_NOTIFICATION / CONTACT_FORM_ACKNOWLEDGEMENT in the
+     * database by running this plugin's Installer::postInstall hooks, which
+     * happens through the Upload A New Plugin flow, and on upgrade only if
+     * the plugin ships an upgrade.xml (added in 1.0.3.0, after this exact gap
+     * first caused a live 500: core's Settings > Workflow > Emails controller
+     * fetches a template by key and hands the result straight to a strictly
+     * typed summarize(EmailTemplate $item) with no null check, so a key with
+     * no row at all crashes the page instead of 404ing). A plugin deployed by
+     * copying files onto the server skips the installer entirely regardless
+     * of upgrade.xml.
+     *
+     * Checking here in register(), rather than only where this plugin's own
+     * code reads a template, matters because the crash happens in *core's*
+     * controller: by the time an admin opens Settings > Workflow > Emails,
+     * register() has already run earlier in the same request, so the
+     * templates already exist before core ever asks for them.
+     *
+     * Safe to call repeatedly: installEmailTemplates()'s $skipExisting flag
+     * only fills in whichever key is actually missing from
+     * email_templates_default_data, and never touches a journal's own
+     * customised copy, which lives in a separate table entirely.
+     *
+     * Unlike ensureSchema(), this runs from register() — every page of the
+     * site, not just this plugin's own — so the result is cached in a
+     * plugin setting once confirmed, rather than rechecking the database on
+     * every single request forever. A failed install deliberately leaves
+     * the setting unset, so it keeps retrying on the next page load instead
+     * of giving up permanently.
+     */
+    private function ensureEmailTemplatesInstalled(): void
+    {
+        if ($this->emailTemplatesChecked) {
+            return;
+        }
+        $this->emailTemplatesChecked = true;
+
+        $context = Application::get()->getRequest()->getContext();
+        if (!$context) {
+            return;
+        }
+
+        $contextId = $context->getId();
+        if ($this->getBoolSetting($contextId, 'emailTemplatesInstalled')) {
+            return;
+        }
+
+        $missing = false;
+        foreach ([ContactFormNotification::class, ContactFormAcknowledgement::class] as $mailableClass) {
+            if (!Repo::emailTemplate()->getByKey($contextId, $mailableClass::getEmailTemplateKey())) {
+                $missing = true;
+                break;
+            }
+        }
+
+        if ($missing) {
+            try {
+                Repo::emailTemplate()->dao->installEmailTemplates($this->getInstallEmailTemplatesFile(), [], null, true);
+            } catch (Exception $exception) {
+                error_log('contactForm: could not install its email templates: ' . $exception->getMessage());
+                return;
+            }
+        }
+
+        $this->updateSetting($contextId, 'emailTemplatesInstalled', true, 'bool');
     }
 
     /**
