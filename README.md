@@ -20,7 +20,7 @@ per-IP rate limit — so it is usable on a journal that is actively targeted by 
 
 1. In OJS, go to **Dashboard → Settings → Website → Plugins → Upload A New Plugin**.
 2. Upload `contactForm-<version>.tar.gz`.
-3. Enable **Contact Form** under *Generic Plugins*.
+3. Enable **Contact Form** under _Generic Plugins_.
 
 Uploading creates the `contact_form_submissions` table automatically. Re-uploading a newer tarball
 upgrades in place; the migration is idempotent and your settings are preserved.
@@ -29,28 +29,10 @@ upgrades in place; the migration is idempotent and your settings are preserved.
 
 ```sh
 cd /path/to/ojs/plugins/generic
-git clone https://github.com/<owner>/contactForm.git contactForm
+git clone https://github.com/darkocujic/contactForm.git contactForm
 ```
 
 The directory **must** be named `contactForm` — OJS derives the plugin class name from it.
-
-Copying the files onto the server this way skips OJS's installer entirely — nothing creates the
-`contact_form_submissions` table for you. Enable the plugin, then open its **Settings** or
-**Messages** modal once; the plugin checks for its own table on first use and creates it if
-missing, so this is enough on its own.
-
-### Troubleshooting: "Table ... doesn't exist"
-
-If you see a `contact_form_submissions` / `Base table or view not found` error, the table was
-never created. This happens with plugin files copied directly onto the server (see above), and it
-could also happen on an **older copy of this plugin before v1.0.3.0** when re-uploading a new
-version over an existing install — OJS only re-runs a plugin's installer on upgrade if the plugin
-ships an `upgrade.xml`, which earlier releases of this plugin didn't.
-
-Re-uploading the current tarball and opening **Settings** or **Messages** once is enough to fix
-it — the self-healing above creates the table immediately. If it still doesn't appear, check that
-the OJS database user has `CREATE TABLE` privilege; the plugin logs the exact error via
-`error_log()` rather than showing it to you.
 
 ## Configuration
 
@@ -61,20 +43,20 @@ Enable the plugin, then use its two actions in the plugin list:
 
 ### Settings
 
-| Setting | Default | Notes |
-|---|---|---|
-| Page address | `contactForm` | URL segment, e.g. `/index.php/myjournal/contactForm`. Letters and digits only. |
-| Page title / Introduction | — | Per-locale; shown above the form. |
-| Recipient email | journal's principal contact | Where messages are delivered. |
-| Recipient name | journal's contact name | — |
-| CC addresses | — | Comma-, semicolon- or whitespace-separated; invalid entries are dropped, maximum 10. |
-| Require a subject | on | — |
-| Send an acknowledgement | **off** | See *Acknowledgements* below before enabling. |
-| Minimum / maximum seconds | 3 / 7200 | How fast, and how stale, a submission may be. |
-| Maximum links | 2 | Submissions with more URLs in the message are rejected. |
-| Blocked words | — | One term per line, matched case-insensitively. |
-| Maximum per hour (per visitor / per journal) | 5 / 50 | Rate limits. |
-| Keep messages for | 365 days | `0` keeps them forever. |
+| Setting                                      | Default                     | Notes                                                                                |
+| -------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
+| Page address                                 | `contactForm`               | URL segment, e.g. `/index.php/myjournal/contactForm`. Letters and digits only.       |
+| Page title / Introduction                    | —                           | Per-locale; shown above the form.                                                    |
+| Recipient email                              | journal's principal contact | Where messages are delivered.                                                        |
+| Recipient name                               | journal's contact name      | —                                                                                    |
+| CC addresses                                 | —                           | Comma-, semicolon- or whitespace-separated; invalid entries are dropped, maximum 10. |
+| Require a subject                            | on                          | —                                                                                    |
+| Send an acknowledgement                      | **off**                     | See _Acknowledgements_ below before enabling.                                        |
+| Minimum / maximum seconds                    | 3 / 7200                    | How fast, and how stale, a submission may be.                                        |
+| Maximum links                                | 2                           | Submissions with more URLs in the message are rejected.                              |
+| Blocked words                                | —                           | One term per line, matched case-insensitively.                                       |
+| Maximum per hour (per visitor / per journal) | 5 / 50                      | Rate limits.                                                                         |
+| Keep messages for                            | 365 days                    | `0` keeps them forever.                                                              |
 
 ### Adding the link to your navigation
 
@@ -118,7 +100,7 @@ turn it on if you accept that trade-off.
 - **Rate limiting** — counted from the stored messages against a per-journal secret-keyed hash of
   the visitor's address.
 
-All five report the *same* generic error to the visitor. Telling a bot which check it tripped is
+All five report the _same_ generic error to the visitor. Telling a bot which check it tripped is
 free tuning advice; genuine mistakes (a missing name, a malformed address) still get a specific,
 helpful message.
 
@@ -126,7 +108,7 @@ helpful message.
 
 OJS resolves the visitor's address with `PKPRequest::getRemoteAddr()`, which **trusts the
 `X-Forwarded-For` header by default** (`general.trust_x_forwarded_for` defaults to on). If your
-installation is *not* behind a reverse proxy that sets that header itself, a client can send any
+installation is _not_ behind a reverse proxy that sets that header itself, a client can send any
 value it likes and so defeat the per-visitor limit — and the same applies to the address OJS hands
 to reCAPTCHA.
 
@@ -173,9 +155,6 @@ The unit tests cover the guard classes only and need no OJS bootstrap, so they r
 
 ### Notes for future maintenance
 
-- The messages archive is a plain paginated table rather than a PKP grid; CSV export and read/unread
-  triage were out of scope for 1.0. A `GridHandler` plus a `LoadComponentHandler` registration is
-  the natural upgrade path if those are wanted.
 - OJS 3.5 replaces reCAPTCHA with ALTCHA and reworks mailables. The captcha is isolated to a single
   `addCheck()` call in `classes/form/ContactForm.php` to keep that port cheap.
 
