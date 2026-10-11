@@ -205,6 +205,19 @@ msgstr "Blocked words, one per line"
 msgid "plugins.generic.contactForm.settings.retention"
 msgstr "Stored messages"
 
+msgid "plugins.generic.contactForm.settings.storeSubmissions"
+msgstr "Store submitted messages"
+
+msgid "plugins.generic.contactForm.settings.storeSubmissions.description"
+msgstr ""
+"When off, no message content is ever written to the database — not the "
+"name, email address, subject or message text, and not the sender's IP "
+"address either. Only a hashed, time-limited record is kept, purely to "
+"enforce the rate limits below; it cannot be used to recover a submitted "
+"message. The journal still receives the notification email as usual. The "
+"\"Messages\" list has nothing to show while this is off, and the setting "
+"below no longer applies."
+
 msgid "plugins.generic.contactForm.settings.retentionDays"
 msgstr "Keep messages for this many days"
 
@@ -242,6 +255,12 @@ msgstr "Messages are kept indefinitely."
 
 msgid "plugins.generic.contactForm.messages.none"
 msgstr "No messages have been received yet."
+
+msgid "plugins.generic.contactForm.messages.storageDisabled"
+msgstr ""
+"Message storage is turned off in this plugin's settings, so there is "
+"nothing to show here. Submitted messages are still emailed to the "
+"journal as usual; they are simply never written to the database."
 
 msgid "plugins.generic.contactForm.messages.received"
 msgstr "Received"

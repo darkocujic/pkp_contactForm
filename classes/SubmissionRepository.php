@@ -110,25 +110,6 @@ class SubmissionRepository
     }
 
     /**
-     * How many messages arrived since a cut-off, optionally from one client.
-     *
-     * @param string|null $ipHash Null counts every submitter.
-     * @param string $since 'Y-m-d H:i:s'
-     */
-    public function countSince(int $contextId, ?string $ipHash, string $since): int
-    {
-        $query = DB::table($this->table())
-            ->where('context_id', '=', $contextId)
-            ->where('date_submitted', '>=', $since);
-
-        if ($ipHash !== null) {
-            $query->where('ip_hash', '=', $ipHash);
-        }
-
-        return (int) $query->count();
-    }
-
-    /**
      * Delete messages older than the retention window.
      *
      * @return int Rows removed.

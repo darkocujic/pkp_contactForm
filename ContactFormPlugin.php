@@ -19,9 +19,12 @@ use APP\plugins\generic\contactForm\classes\form\ContactFormSettingsForm;
 use APP\plugins\generic\contactForm\classes\mailables\ContactFormAcknowledgement;
 use APP\plugins\generic\contactForm\classes\mailables\ContactFormNotification;
 use APP\plugins\generic\contactForm\classes\spam\HoneypotGuard;
+use APP\plugins\generic\contactForm\classes\spam\Throttle;
 use APP\plugins\generic\contactForm\classes\SubmissionRepository;
+use APP\plugins\generic\contactForm\classes\ThrottleLog;
 use APP\template\TemplateManager;
 use Exception;
+use PKP\core\Core;
 use PKP\core\JSONMessage;
 use PKP\facades\Locale;
 use PKP\linkAction\LinkAction;
@@ -65,6 +68,7 @@ class ContactFormPlugin extends GenericPlugin
         'recipientName' => '',
         'ccEmails' => '',
         'requireSubject' => true,
+        'storeSubmissions' => true,
         'enableAcknowledgement' => false,
         'honeypotMinSeconds' => 3,
         'honeypotMaxSeconds' => 7200,
@@ -77,6 +81,9 @@ class ContactFormPlugin extends GenericPlugin
 
     /** @var SubmissionRepository|null Lazily constructed */
     private $submissionRepository = null;
+
+    /** @var ThrottleLog|null Lazily constructed */
+    private $throttleLog = null;
 
     /** Whether ensureSchema() has already run for this request */
     private bool $schemaChecked = false;
@@ -354,6 +361,14 @@ class ContactFormPlugin extends GenericPlugin
     private function renderMessages($request): string
     {
         $contextId = $request->getContext()->getId();
+        $templateMgr = TemplateManager::getManager($request);
+
+        if (!$this->getBoolSetting($contextId, 'storeSubmissions')) {
+            // Nothing to purge or paginate: storage being off means this
+            // table has had nothing written to it since it was turned off.
+            $templateMgr->assign('storageEnabled', false);
+            return $templateMgr->fetch($this->getTemplateResource('messages.tpl'));
+        }
 
         $this->deleteRequestedMessage($request, $contextId);
         $this->maybePurge($contextId);
@@ -363,8 +378,8 @@ class ContactFormPlugin extends GenericPlugin
         $lastPage = max(1, (int) ceil($total / self::MESSAGES_PER_PAGE));
         $page = min(max(1, (int) $request->getUserVar('messagePage')), $lastPage);
 
-        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign([
+            'storageEnabled' => true,
             'pluginName' => $this->getName(),
             'submissions' => $repository->getMany(
                 $contextId,
@@ -420,6 +435,21 @@ class ContactFormPlugin extends GenericPlugin
             $this->submissionRepository = new SubmissionRepository();
         }
         return $this->submissionRepository;
+    }
+
+    /**
+     * Rate limiting lives in its own table regardless of whether message
+     * storage is enabled, so this shares ensureSchema() (which creates both
+     * tables) rather than the message-archive repository above.
+     */
+    public function getThrottleLog(): ThrottleLog
+    {
+        $this->ensureSchema();
+
+        if ($this->throttleLog === null) {
+            $this->throttleLog = new ThrottleLog();
+        }
+        return $this->throttleLog;
     }
 
     /**
@@ -692,11 +722,6 @@ class ContactFormPlugin extends GenericPlugin
      */
     public function maybePurge(int $contextId): void
     {
-        $retentionDays = $this->getIntSetting($contextId, 'retentionDays');
-        if ($retentionDays < 1) {
-            return;
-        }
-
         $lastPurgeAt = (int) $this->getSetting($contextId, 'lastPurgeAt');
         if ($lastPurgeAt > time() - self::PURGE_INTERVAL_SECONDS) {
             return;
@@ -706,10 +731,34 @@ class ContactFormPlugin extends GenericPlugin
         // every page load.
         $this->updateSetting($contextId, 'lastPurgeAt', time(), 'int');
 
+        $retentionDays = $this->getIntSetting($contextId, 'retentionDays');
+        if ($retentionDays >= 1) {
+            try {
+                $this->getSubmissionRepository()->purgeOlderThan($contextId, $retentionDays);
+            } catch (Exception $exception) {
+                error_log('contactForm: retention purge failed: ' . $exception->getMessage());
+            }
+        }
+
+        $this->purgeThrottleLog();
+    }
+
+    /**
+     * Delete throttle-log rows once they can no longer affect the rate
+     * limit. Unlike the message archive, this has no per-journal retention
+     * setting and runs regardless of one — the whole point of this table is
+     * to hold nothing but a hashed IP and a timestamp, briefly, so it should
+     * never accumulate indefinitely even when a journal keeps its message
+     * archive forever (retentionDays = 0) or disables the archive entirely.
+     */
+    public function purgeThrottleLog(): int
+    {
         try {
-            $this->getSubmissionRepository()->purgeOlderThan($contextId, $retentionDays);
+            $cutoff = Core::getCurrentDate(time() - (Throttle::WINDOW_SECONDS * 2));
+            return $this->getThrottleLog()->purgeOlderThan($cutoff);
         } catch (Exception $exception) {
-            error_log('contactForm: retention purge failed: ' . $exception->getMessage());
+            error_log('contactForm: throttle log purge failed: ' . $exception->getMessage());
+            return 0;
         }
     }
 }

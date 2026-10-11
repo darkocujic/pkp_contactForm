@@ -6,13 +6,17 @@
  *
  * The archive of messages received through the contact form.
  *
- * @uses $pluginName string
+ * @uses $storageEnabled bool Whether the "Store submitted messages" setting is on
+ * @uses $pluginName string Only assigned when $storageEnabled is true
  * @uses $submissions array ContactSubmission objects, newest first
  * @uses $messageTotal int Total stored for this journal
  * @uses $messagePage int Current page, 1-based
  * @uses $messageLastPage int
  * @uses $retentionDays int 0 means messages are kept indefinitely
  *}
+{if !$storageEnabled}
+	<p>{translate key="plugins.generic.contactForm.messages.storageDisabled"}</p>
+{else}
 {assign var="previousPage" value=$messagePage-1}
 {assign var="nextPage" value=$messagePage+1}
 {capture assign="confirmDeleteMessage"}{translate key="plugins.generic.contactForm.messages.confirmDelete"}{/capture}
@@ -106,3 +110,4 @@
 		{/if}
 	{/if}
 </form>
+{/if}

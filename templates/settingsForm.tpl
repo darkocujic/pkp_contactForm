@@ -116,6 +116,15 @@
 	{/fbvFormArea}
 
 	{fbvFormArea id="contactFormRetentionArea" title="plugins.generic.contactForm.settings.retention"}
+		{fbvFormSection list=true}
+			{fbvElement type="checkbox" id="storeSubmissions" checked=$storeSubmissions
+				label="plugins.generic.contactForm.settings.storeSubmissions"}
+		{/fbvFormSection}
+		{fbvFormSection}
+			<p class="pkp_help">
+				{translate key="plugins.generic.contactForm.settings.storeSubmissions.description"}
+			</p>
+		{/fbvFormSection}
 		{fbvFormSection}
 			{fbvElement type="text" id="retentionDays" value=$retentionDays
 				label="plugins.generic.contactForm.settings.retentionDays"

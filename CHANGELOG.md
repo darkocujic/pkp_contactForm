@@ -7,6 +7,17 @@ Versioning, to match every other plugin in the OJS ecosystem.
 
 ## [Unreleased]
 
+## [1.0.6.0] - 2026-10-11
+
+### Added
+
+- A **Store submitted messages** setting. Turning it off means no message
+  content — name, email address, subject, body, user agent — is ever
+  written to the database; the journal still gets the notification email
+  as usual. Rate limiting keeps working regardless: it's now backed by
+  its own table holding nothing but a hashed IP and a timestamp, purged
+  within a couple of hours, decoupled from the message archive entirely.
+
 ## [1.0.5.0] - 2026-10-11
 
 ### Fixed

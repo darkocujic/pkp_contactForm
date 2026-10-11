@@ -244,6 +244,7 @@ class ContactForm extends Form
         parent::execute(...$functionArgs);
 
         $contextId = $this->context->getId();
+        $ipHash = $this->plugin->hashIp($contextId, $this->request->getRemoteAddr());
         $submission = new ContactSubmission(
             null,
             $contextId,
@@ -252,29 +253,44 @@ class ContactForm extends Form
             $this->nullIfEmpty(trim((string) $this->getData('subject'))),
             trim((string) $this->getData('body')),
             Locale::getLocale(),
-            $this->plugin->hashIp($contextId, $this->request->getRemoteAddr()),
+            $ipHash,
             $this->nullIfEmpty(mb_substr((string) $this->request->getUserAgent(), 0, 255)),
             false,
             Core::getCurrentDate()
         );
 
-        $repository = $this->plugin->getSubmissionRepository();
-
-        // Store first: a mail failure must not lose the message.
+        // Rate limiting is counted here regardless of whether the message
+        // itself is stored below — this is the one place a submission is
+        // confirmed accepted, and the two are deliberately independent so
+        // disabling message storage never disables rate limiting too.
         try {
-            $repository->add($submission);
-            $this->stored = true;
+            $this->plugin->getThrottleLog()->record($contextId, $ipHash);
         } catch (Throwable $exception) {
-            error_log('contactForm: could not store a message: ' . $exception->getMessage());
+            error_log('contactForm: could not record a submission for rate limiting: ' . $exception->getMessage());
+        }
+
+        if ($this->plugin->getBoolSetting($contextId, 'storeSubmissions')) {
+            $repository = $this->plugin->getSubmissionRepository();
+
+            // Store first: a mail failure must not lose the message.
+            try {
+                $repository->add($submission);
+                $this->stored = true;
+            } catch (Throwable $exception) {
+                error_log('contactForm: could not store a message: ' . $exception->getMessage());
+            }
         }
 
         $mailer = new ContactFormMailer($this->plugin);
         $this->delivered = $mailer->sendNotification($this->context, $submission);
 
         if ($this->delivered) {
+            // $this->stored can only be true when storage is enabled, so
+            // re-fetching the repository here (rather than keeping it in
+            // scope from above) costs nothing when it's off.
             if ($this->stored && $submission->id !== null) {
                 try {
-                    $repository->markEmailed($submission->id);
+                    $this->plugin->getSubmissionRepository()->markEmailed($submission->id);
                 } catch (Throwable $exception) {
                     error_log('contactForm: could not flag a message as emailed: ' . $exception->getMessage());
                 }
@@ -344,13 +360,13 @@ class ContactForm extends Form
         );
 
         try {
-            $repository = $this->plugin->getSubmissionRepository();
+            $throttleLog = $this->plugin->getThrottleLog();
             $since = Core::getCurrentDate(Throttle::windowStart());
             $ipHash = $this->plugin->hashIp($contextId, $this->request->getRemoteAddr());
 
             $allowed = $throttle->isAllowed(
-                $ipHash === null ? 0 : $repository->countSince($contextId, $ipHash, $since),
-                $repository->countSince($contextId, null, $since)
+                $ipHash === null ? 0 : $throttleLog->countSince($contextId, $ipHash, $since),
+                $throttleLog->countSince($contextId, null, $since)
             );
         } catch (Throwable $exception) {
             // The rate limit is a safeguard, not a gate: if the count cannot

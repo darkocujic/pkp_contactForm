@@ -22,8 +22,9 @@ per-IP rate limit — so it is usable on a journal that is actively targeted by 
 2. Upload `contactForm-<version>.tar.gz`.
 3. Enable **Contact Form** under _Generic Plugins_.
 
-Uploading creates the `contact_form_submissions` table automatically. Re-uploading a newer tarball
-upgrades in place; the migration is idempotent and your settings are preserved.
+Uploading creates the `contact_form_submissions` and `contact_form_throttle` tables automatically.
+Re-uploading a newer tarball upgrades in place; the migration is idempotent and your settings are
+preserved.
 
 ### From source
 
@@ -55,8 +56,9 @@ Enable the plugin, then use its two actions in the plugin list:
 | Minimum / maximum seconds                    | 3 / 7200                    | How fast, and how stale, a submission may be.                                        |
 | Maximum links                                | 2                           | Submissions with more URLs in the message are rejected.                              |
 | Blocked words                                | —                           | One term per line, matched case-insensitively.                                       |
-| Maximum per hour (per visitor / per journal) | 5 / 50                      | Rate limits.                                                                         |
-| Keep messages for                            | 365 days                    | `0` keeps them forever.                                                              |
+| Maximum per hour (per visitor / per journal) | 5 / 50                      | Rate limits. Enforced even when "Store submitted messages" is off. |
+| Store submitted messages                     | on                           | Turn off for zero message content in the database — see _Privacy_ below. |
+| Keep messages for                            | 365 days                    | `0` keeps them forever. Irrelevant while the setting above is off.                  |
 
 ### Adding the link to your navigation
 
@@ -97,8 +99,9 @@ turn it on if you accept that trade-off.
   rejected. Unlike a session-based timer this survives session loss and page caching.
 - **Content heuristics** — link counts, a blocked-word list, hard length caps on every field, and
   rejection of mail-header injection markers.
-- **Rate limiting** — counted from the stored messages against a per-journal secret-keyed hash of
-  the visitor's address.
+- **Rate limiting** — counted against a per-journal secret-keyed hash of the visitor's address, in
+  a separate record that holds nothing else and is purged within hours. This works independently
+  of message storage, so turning off **Store submitted messages** never turns off rate limiting.
 
 All five report the _same_ generic error to the visitor. Telling a bot which check it tripped is
 free tuning advice; genuine mistakes (a missing name, a malformed address) still get a specific,
@@ -125,11 +128,26 @@ The per-journal limit is unaffected either way, so total volume stays capped reg
 
 Stored messages contain the name, email address and message text the visitor submitted. The
 visitor's IP address is **never** stored — only an HMAC-SHA256 of it, keyed with a per-journal
-secret, which is used for rate limiting and cannot be reversed or correlated across journals.
+secret, which cannot be reversed or correlated across journals.
 
 Set **Keep messages for** to a period your privacy policy supports, and mention the contact form in
 the journal's privacy statement. Expired messages are deleted by a scheduled task, with a
 once-a-day fallback purge for installations that do not run `acron` or cron.
+
+### Turning off message storage entirely
+
+If you don't want the plugin to retain anything at all, turn off **Store submitted messages**.
+With it off:
+
+- No message content — name, email address, subject, body, user agent — is ever written to the
+  database. The **Messages** list has nothing to show, and says so.
+- The journal still receives the notification email exactly as before; only the database copy is
+  skipped.
+- Rate limiting still works. It's backed by its own table (`contact_form_throttle`) holding
+  nothing but a hashed IP and a timestamp, with no message content and no connection to the
+  archive table — this is deliberate, so disabling storage can't be used to disable rate limiting
+  too. Rows in that table are purged within a couple of hours regardless of any setting; there's
+  nothing to configure for it.
 
 ## Emails
 

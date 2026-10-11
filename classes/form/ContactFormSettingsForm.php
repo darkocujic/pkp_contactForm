@@ -32,7 +32,7 @@ class ContactFormSettingsForm extends Form
     public const TEXT_FIELDS = ['pagePath', 'recipientEmail', 'recipientName', 'ccEmails', 'blocklist'];
 
     /** Settings stored as a boolean. */
-    public const BOOLEAN_FIELDS = ['requireSubject', 'enableAcknowledgement'];
+    public const BOOLEAN_FIELDS = ['requireSubject', 'storeSubmissions', 'enableAcknowledgement'];
 
     /** Settings stored as a non-negative integer. */
     public const INTEGER_FIELDS = [

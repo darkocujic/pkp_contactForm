@@ -73,6 +73,20 @@ class PurgeSubmissions extends ScheduledTask
             }
         }
 
+        // Not scoped to a context and has no per-journal retention setting —
+        // purge it once here regardless of what the loop above did, so a
+        // site relying on this task rather than opening the plugin's own
+        // Messages list still keeps it clean.
+        try {
+            $removed += $plugin->purgeThrottleLog();
+        } catch (Throwable $exception) {
+            $this->addExecutionLogEntry(
+                'contactForm: ' . $exception->getMessage(),
+                ScheduledTaskHelper::SCHEDULED_TASK_MESSAGE_TYPE_ERROR
+            );
+            return false;
+        }
+
         $this->addExecutionLogEntry(
             __('plugins.generic.contactForm.task.purge.removed', ['count' => $removed]),
             ScheduledTaskHelper::SCHEDULED_TASK_MESSAGE_TYPE_COMPLETED
