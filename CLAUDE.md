@@ -54,4 +54,10 @@ tarball.
 Commit often — one commit per coherent unit of work, not one commit per session. Commit as soon as a
 file group is lint-clean, so a bad step can be dropped without unpicking good work.
 Short imperative subjects (`Add honeypot guard`, `Fix CC list validation`). Bump `version.xml`'s
-`<release>` in its own commit. **No `Co-Authored-By` or generated-with trailers in commit messages.**
+`<release>` in its own commit, and in that same commit move `CHANGELOG.md`'s `[Unreleased]` section
+(write one if there wasn't one yet) into a new `## [<release>] - <date>` section, in user-facing
+language grouped under Keep a Changelog headings (Added/Changed/Fixed/Security) — not a dump of
+commit subjects. Pushing that commit to `master` fires `.github/workflows/release.yml`, which tags
+it, builds the tarball, and publishes a GitHub Release using that exact section as the release notes
+(falling back to the raw commit log only if the section is missing — don't rely on that fallback).
+**No `Co-Authored-By` or generated-with trailers in commit messages.**

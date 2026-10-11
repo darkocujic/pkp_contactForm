@@ -1,0 +1,104 @@
+name: Release
+
+# Fires whenever version.xml changes on master — i.e. exactly when a commit
+# bumps <release>, per this repo's own convention of bumping it in its own
+# commit. Re-running on an unrelated later push is a no-op: the "already
+# released" check below is keyed off the tag, not off this trigger firing.
+on:
+  push:
+    branches: [master]
+    paths: [version.xml]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and publish a release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history and tags: needed both to check whether this
+          # version was already released, and to build the commit-log
+          # fallback for release notes.
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, dom, xml
+          tools: phpunit:10
+
+      - name: Read the version and compute the tag
+        id: version
+        run: |
+          release="$(sed -n 's:.*<release>\(.*\)</release>.*:\1:p' version.xml | head -1)"
+          if [ -z "$release" ]; then
+            echo "::error::Could not read <release> from version.xml"
+            exit 1
+          fi
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "tag=v$release" >> "$GITHUB_OUTPUT"
+
+      - name: Stop here if this version is already released
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "::notice::${{ steps.version.outputs.tag }} already exists; nothing to release."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Re-verifies the exact commit being released, independent of whatever
+      # the ordinary test.yml run (triggered by the same push) decides —
+      # a broken version bump should never be able to produce a tagged
+      # release just because this job happened to run first.
+      - name: Verify the plugin before releasing it
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          while IFS= read -r file; do
+            php -l "$file" > /dev/null
+          done < <(git ls-files '*.php')
+          phpunit
+          php tools/check-locale-keys.php
+          for f in version.xml emailTemplates.xml scheduledTasks.xml upgrade.xml; do
+            php -r 'exit((new DOMDocument())->load($argv[1]) ? 0 : 1);' "$f"
+          done
+
+      - name: Build the release tarball
+        if: steps.check.outputs.exists == 'false'
+        run: bash tools/build-release.sh
+
+      - name: Write the release notes
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          release="${{ steps.version.outputs.release }}"
+          if php tools/extract-changelog.php "$release" > release-notes.md; then
+            echo "Using the CHANGELOG.md section for $release."
+          else
+            echo "::notice::No CHANGELOG.md section for $release yet; using the commit log instead."
+            prev_tag="$(git tag --list 'v*' --sort=-v:refname | grep -vx "${{ steps.version.outputs.tag }}" | head -1)"
+            if [ -n "$prev_tag" ]; then
+              git log --no-merges --pretty=format:'- %s' "$prev_tag"..HEAD > release-notes.md
+            else
+              git log --no-merges --pretty=format:'- %s' > release-notes.md
+            fi
+          fi
+
+      - name: Create the tag and GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            "contactForm-${{ steps.version.outputs.release }}.tar.gz" \
+            --target "${{ github.sha }}" \
+            --title "contactForm ${{ steps.version.outputs.release }}" \
+            --notes-file release-notes.md
