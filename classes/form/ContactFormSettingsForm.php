@@ -68,7 +68,9 @@ class ContactFormSettingsForm extends Form
             'pagePath',
             FormValidator::FORM_VALIDATOR_OPTIONAL_VALUE,
             'plugins.generic.contactForm.settings.error.pagePath',
-            fn ($value) => (bool) preg_match('/^[A-Za-z0-9]+$/', (string) $value)
+            // Matches Core::cleanFileVar(), which is what OJS's own router
+            // actually lets survive in a page-name URL segment.
+            fn ($value) => (bool) preg_match('/^[A-Za-z0-9_-]+$/', (string) $value)
         ));
 
         $this->addCheck(new FormValidatorEmail(

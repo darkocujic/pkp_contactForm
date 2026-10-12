@@ -46,7 +46,7 @@ Enable the plugin, then use its two actions in the plugin list:
 
 | Setting                                      | Default                     | Notes                                                                                |
 | -------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
-| Page address                                 | `contactForm`               | URL segment, e.g. `/index.php/myjournal/contactForm`. Letters and digits only.       |
+| Page address                                 | `contactForm`               | URL segment, e.g. `/index.php/myjournal/contact-us`. Letters, digits, `-` and `_` only. |
 | Page title / Introduction                    | —                           | Per-locale; shown above the form.                                                    |
 | Recipient email                              | journal's principal contact | Where messages are delivered.                                                        |
 | Recipient name                               | journal's contact name      | —                                                                                    |

@@ -7,6 +7,15 @@ Versioning, to match every other plugin in the OJS ecosystem.
 
 ## [Unreleased]
 
+## [1.0.7.0] - 2026-10-12
+
+### Changed
+
+- The page address setting now allows hyphens and underscores (e.g.
+  `contact-us`), not just letters and digits. OJS's own router already
+  tolerated both in a page-name URL segment; the plugin's own validation
+  was narrower than it needed to be.
+
 ## [1.0.6.0] - 2026-10-11
 
 ### Added

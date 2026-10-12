@@ -228,7 +228,9 @@ msgstr ""
 "in the journal's privacy statement."
 
 msgid "plugins.generic.contactForm.settings.error.pagePath"
-msgstr "The page address is required and may contain only letters and digits."
+msgstr ""
+"The page address is required and may contain only letters, digits, "
+"hyphens and underscores."
 
 msgid "plugins.generic.contactForm.settings.error.recipientEmail"
 msgstr ""

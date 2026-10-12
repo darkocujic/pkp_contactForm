@@ -612,13 +612,16 @@ class ContactFormPlugin extends GenericPlugin
     /**
      * The URL segment the public page is served from.
      *
-     * Restricted to letters and digits: the page component of an OJS URL is
-     * sanitised by the router, so anything else would never match.
+     * Restricted to what OJS's own router actually lets through: Core::
+     * cleanFileVar() strips anything that isn't a word character or a
+     * hyphen before the page component ever reaches our LoadHandler hook,
+     * so permitting anything wider here would just mean a path nobody
+     * could ever successfully request.
      */
     public function getPagePath(int $contextId): string
     {
         $path = $this->getStringSetting($contextId, 'pagePath');
-        return preg_match('/^[A-Za-z0-9]+$/', $path) ? $path : self::DEFAULT_PAGE_PATH;
+        return preg_match('/^[A-Za-z0-9_-]+$/', $path) ? $path : self::DEFAULT_PAGE_PATH;
     }
 
     /**

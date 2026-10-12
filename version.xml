@@ -12,8 +12,8 @@
 <version>
 	<application>contactForm</application>
 	<type>plugins.generic</type>
-	<release>1.0.6.0</release>
-	<date>2026-10-11</date>
+	<release>1.0.7.0</release>
+	<date>2026-10-12</date>
 	<lazy-load>1</lazy-load>
 	<class>ContactFormPlugin</class>
 </version>
