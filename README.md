@@ -62,8 +62,21 @@ Enable the plugin, then use its two actions in the plugin list:
 
 ### Adding the link to your navigation
 
-The plugin registers a **Contact form** navigation menu item type. Add it under
-**Settings → Website → Navigation** and place it wherever you want; the URL is filled in for you.
+The plugin registers a **Contact form** navigation menu item type, but it isn't under a tab
+literally called "Navigation" — here's the exact path:
+
+1. Go to **Settings → Website**, then the **Setup** tab (not Appearance).
+2. Open the **Navigation Menus** sub-tab. This shows two grids stacked on the same page: **Navigation
+   Menus** (the menus themselves, e.g. "Primary Navigation Menu") above, **Navigation Menu Items**
+   (the reusable items you create once, each with a type) below.
+3. In the **Navigation Menu Items** grid, click **Add Item**, pick **Contact form** from the Type
+   dropdown, and give it a title (e.g. "Contact us"). The target URL is filled in for you.
+4. In the **Navigation Menus** grid, open whichever menu you want it in and add that item to its
+   structure.
+
+If "Contact form" doesn't appear in the Type dropdown, double-check the plugin is enabled for the
+same journal you're editing Website Settings for — it's a journal-level plugin, so being enabled
+for one journal doesn't make it available in another's navigation.
 
 ### reCAPTCHA
 
